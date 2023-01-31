@@ -1,0 +1,38 @@
+---
+- name: install lamp on ubuntu 20 
+  hosts: all
+  become: yes # whether to run the task with sudo 
+  tasks:
+    - name: install Apache2
+      ansible.builtin.apt:
+        name: {{apache_package_name}}
+        update_cache: yes
+        state: present
+    - name: install php
+      ansible.builtin.apt:
+        name: 
+          - php
+          - libapache2-mod-php
+          - php-mysql
+        state: present
+    - name: copy info.php
+      ansible.builtin.copy:
+        src: info.php
+        dest: /var/www/html/info.php
+    - name: change permissions
+      ansible.builtin.command: 
+        argv:
+          - sudo chown -R www-data:www-data /var/www/html/
+          - sudo chmod -R g+rw /var/www/html/
+  handlers:
+
+    - name: ensure the apache service is running and enabled on  ubuntu
+      ansible.builtin.systemd:
+        name: apache2
+        enabled: yes
+        state: started
+    - name: ensure the apache service is running and enabled on  ubuntu
+      ansible.builtin.systemd:
+        name: httpd
+        enabled: yes
+        state: started 

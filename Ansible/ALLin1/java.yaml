@@ -1,0 +1,54 @@
+---
+- name: install java on linux 
+  hosts: all
+  become: yes # whether to run the task with sudo 
+  vars:
+    java_ver: "openjdk-11-jdk"
+    java1_ver: "openjdk-17-jdk"
+  tasks:
+    - name: java-11 install
+      ansible.builtin.apt:
+        name: "{{java_ver}}"
+        update_cache: yes
+        state: latest
+      when: ansible_facts['hostname'] == "ip-172-31-11-82"
+    - name: java-17 install
+      ansible.builtin.apt:
+        name: "{{java1_ver}}"
+        update_cache: yes
+        state: latest
+      when: ansible_facts['hostname'] == "ip-172-31-9-221"
+#installing java-13
+    - name: create directory
+      ansible.builtin.file:
+        path: /usr/java/
+        state: directory
+        mode: '0777'
+      when: ansible_facts['hostname'] == "ip-172-31-9-96"
+    - name: download the tar ansible.builtin.file
+      ansible.builtin.get_url:
+        url: https://download.java.net/java/GA/jdk13/5b8a42f3905b406298b72d750b6919f6/33/GPL/openjdk-13_linux-x64_bin.tar.gz
+        dest: /tmp/
+      when: ansible_facts['hostname'] == "ip-172-31-9-96"
+    - name: Unarchive a file that is already on the remote machine
+      ansible.builtin.unarchive:
+        src: /tmp/openjdk-13_linux-x64_bin.tar.gz
+        dest: /usr/java/
+        remote_src: yes
+      when: ansible_facts['hostname'] == "ip-172-31-9-96"
+    - name: insert data in /etc/profile
+      ansible.builtin.blockinfile:
+        path: /etc/profile
+        block:  |
+          # Java 13
+          JAVA_HOME=/usr/java/jdk-13
+          PATH=$PATH:$HOME/bin:$JAVA_HOME/bin
+          export JAVA_HOME
+          export PATH
+      when: ansible_facts['hostname'] == "ip-172-31-9-96"
+# this is the
+
+
+
+          
+          

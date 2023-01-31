@@ -1,0 +1,60 @@
+---
+- name: tomcat on ubuntu
+  hosts: 172.31.11.82
+  become: yes
+  vars:
+    version: "10.1.5"
+  tasks:
+    - name: installing java
+      ansible.builtin.apt:
+        name: openjdk-11-jdk
+        update_cache: yes
+        state: present
+    - name: creating a system user
+      ansible.builtin.user:
+        name: tomcat
+        create_home: true
+        home: /opt/tomcat/
+        shell: /bin/false
+        state: present
+    - name: creating tomcat group
+      ansible.builtin.group:
+        name: tomcat
+        state: present
+    - name: downloading tomcat
+      ansible.builtin.get_url:
+        url: https://www-eu.apache.org/dist/tomcat/tomcat-10/v{{version}}/bin/apache-tomcat-{{version}}.tar.gz 
+        dest: /tmp/
+    - name: unarchive tar file
+      ansible.builtin.unarchive:
+        src: /tmp/apache-tomcat-{{version}}.tar.gz
+        dest: /opt/tomcat/
+        mode: '777'
+        owner: tomcat
+        group: tomcat
+        remote_src: yes
+    - name: creating symbolic link
+      ansible.builtin.file: 
+        src: /opt/tomcat/apache-tomcat-{{version}}
+        dest: /opt/tomcat/latest
+        owner: tomcat
+        group: tomcat
+        state: link
+        mode: '777'
+    - name: tomcat's bin shell directory executable order
+      ansible.builtin.command: sudo  sh -c 'chmod +x /opt/tomcat/latest/bin/*.sh'
+    - name: creating tomcat.service
+      ansible.builtin.copy:
+        src: tomcat.service
+        dest: /etc/systemd/system/tomcat.service
+        owner: tomcat
+        group: tomcat
+        mode: '777'
+    - name: enable and start tomcat service
+      ansible.builtin.systemd: 
+        name: tomcat.service
+        daemon_reload: yes
+        enabled: yes
+        state: started
+
+

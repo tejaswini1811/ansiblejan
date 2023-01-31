@@ -1,0 +1,103 @@
+---
+- name: installing mongodb on ubuntu
+  hosts: blackwidow
+  become: yes
+  tasks:
+    - name: install necessary softwares
+      ansible.builtin.apt:
+        name:
+          - gnupg2
+          - software-properties-common
+          - apt-transport-https
+          - ca-certificates
+          - lsb-release
+        update_cache: yes
+        state: latest
+    - name: importing public key
+      ansible.builtin.apt_key:
+        url: https://www.mongodb.org/static/pgp/server-6.0.asc
+        keyring: /etc/apt/trusted.gpg.d/mongodb-6.gpg
+        state: present
+    - name: configure mongodb repo 
+      ansible.builtin.apt_repository:
+        filename: /etc/apt/sources.list.d/mongodb-org-6.0.list
+        repo: "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse"
+        state: present
+        mode: '644'
+    - name: install debian package
+      ansible.builtin.get_url:
+        url: http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.16_amd64.deb
+        dest: /tmp/
+    - name: dpkg package selection
+      ansible.builtin.dpkg_selections:
+        name: libssl1.1_1.1.1f-1ubuntu2.16_amd64.deb
+        selection: install
+    - name: install mongodb-org
+      ansible.builtin.apt:
+        name: mongodb-org
+        update_cache: yes
+        state: present
+    - name: state and enable mongodb
+      ansible.builtin.systemd:
+        name: mongod.service
+        enabled: yes
+    - name: configure mongodb
+      ansible.builtin.copy:
+        src: mongod.conf
+        dest: /etc/mongod.conf
+    - name: restart the mongodb.service
+      ansible.builtin.systemd:
+        name: mongod.service
+        daemon_reload: true
+        enabled: true 
+        state: "restarted"
+    # - name: stopped the mongodb.service
+    #   ansible.builtin.systemd:
+    #     name: mongod.service
+    #     state: stopped
+    # - name: create a directory for default path
+    #   ansible.builtin.file:
+    #     path: /newdata/mongo/
+    #     owner: mongodb
+    #     group: mongodb
+    #     mode: '777'
+    #     state: directory
+    # - name: copy from /var/lib/mongodb to /newdata/mongo 
+    #   ansible.builtin.copy:
+    #     src: /var/lib/mongodb
+    #     dest: /newdata/mongo
+    #     owner: mongodb
+    #     group: mongodb
+    #     mode: '777'
+    #     remote_src: yes
+    # - name: rename the old directory to a backupfile
+    #   ansible.builtin.copy:
+    #     src: /var/lib/mongodb
+    #     dest: /var/lib/mongodb.bak
+    #     owner: mongodb
+    #     group: mongodb
+    #     remote_src: yes
+    # - name: removing directory /var/lib/mongodb
+    #   ansible.builtin.file:
+    #     path: /var/lib/mongodb
+    #     state: absent  
+    # - name: symbolic link to the new directory
+    #   ansible.builtin.file:
+    #     src: /newdata/mongo/
+    #     dest: /var/lib/mongodb
+    #     state: link
+    - name: creating user and add role in mongodb
+      community.mongodb.mongodb_user:
+         database: admin
+         name: teju 
+         password: teju1811
+    - name: insert data
+      community.mongodb.mongodb_shell:
+      
+ 
+      
+  
+     
+
+    
+        
