@@ -1,0 +1,19 @@
+---
+# tasks file for nodejs
+    - name: install nodejs on ubuntu
+      ansible.builtin.apt:
+        name: 
+          - nodejs
+          - npm
+        update_cache: yes
+        state: present
+      when: ansible_facts['distribution'] == "Ubuntu"
+    - name: install nodejs on centos
+      ansible.builtin.shell: curl –sL https://rpm.nodesource.com/setup_10.x | sudo bash -
+      when: ansible_facts['hostname'] == "ip-172-31-33-94"
+    - name: install nodejs 
+      ansible.builtin.yum:
+        name: nodejs
+        update_cache: yes
+        state: present
+      when: ansible_facts['hostname'] == "ip-172-31-33-94"
