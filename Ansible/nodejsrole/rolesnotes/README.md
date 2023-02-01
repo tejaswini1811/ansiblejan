@@ -12,7 +12,7 @@ Nodejs
   ```
   node --version
   ```
-  ![preview]()
+  ![preview](rolesimages/ansible1.png)
 * [Referhere](https://phoenixnap.com/kb/install-node-js-npm-centos) for centos7
 * commands used:
    ```
@@ -24,6 +24,7 @@ Nodejs
   ```
   node --version
   ```
+![preview](rolesimages/ansible2.png)
 Ansible-playbook for both centos and ubuntu
 -------------------------------------------
 [Referhere](https://github.com/tejaswini1811/ansiblejan/blob/main/Ansible/ALLin1/nodejs.yaml)
@@ -52,3 +53,6 @@ Ansible-playbook:
   roles:
     - <rolename>
 ```
+![preview](rolesimages/ansible3.png)
+![preview](rolesimages/ansible4.png)
+![preview](rolesimages/ansible5.png)
