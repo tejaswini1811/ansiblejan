@@ -1,38 +1,54 @@
-Role Name
+Nodejs
 =========
+## Manual Steps
 
-A brief description of the role goes here.
-
-Requirements
-------------
-
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
-
-Role Variables
---------------
-
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
-
-Dependencies
-------------
-
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
-
-Example Playbook
-----------------
-
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
-
-License
--------
-
-BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+* [Referhere](https://cloudcone.com/docs/article/how-to-install-node-js-on-ubuntu-22-04/) for ubuntu 22.04
+* commands used:
+  ```
+   sudo apt update
+   sudo apt install nodejs npm
+  ```
+* To check wheather nodejs is installed or not check version.
+  ```
+  node --version
+  ```
+  ![preview](ansible1.png)
+* [Referhere](https://phoenixnap.com/kb/install-node-js-npm-centos) for centos7
+* commands used:
+   ```
+   sudo yum update
+   curl –sL https://rpm.nodesource.com/setup_10.x | sudo bash -
+   sudo yum install –y nodejs
+   ```
+* To check wheather nodejs is installed or not check version.
+  ```
+  node --version
+  ```
+Ansible-playbook for both centos and ubuntu
+-------------------------------------------
+[Referhere](https://github.com/tejaswini1811/ansiblejan/blob/main/Ansible/ALLin1/nodejs.yaml)
+## Creating roles:
+* To ceate a role we have to following steps:
+1. In local host we have to create a role using  " ansible-galaxy role init < rolename >" 
+2. After creating role download the role files into your laptop floder using sftp.
+  ```
+  cd /path/
+  sftp <username>@publicip
+  sftp> get -r <rolename>
+  ```
+3. Add the roles floder to your git repository.
+   
+## After creating role:
+* By using following commad you can get the roles directory into your machine.
+```
+git clone https://github.com/tejaswini1811/roles.git
+```
+Ansible-playbook:
+```
+---
+- name: install nodejs on ubuntu and centos
+  hosts: all
+  become: yes
+  roles:
+    - <rolename>
+```
