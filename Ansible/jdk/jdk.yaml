@@ -1,0 +1,13 @@
+---
+- name: java 11/8 on ubuntu and centos
+  hosts: all
+  become: yes
+  tasks:
+    - name: update packages for ubuntu
+      ansible.builtin.apt:
+        update_cache: yes
+      when: ansible_facts['distribution'] == "Ubuntu"
+    - name: install jdk-11 and jdk-8 on centos and ubuntu
+      ansible.builtin.package:
+        name: "{{java_version}}"
+        state: present

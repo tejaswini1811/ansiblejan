@@ -1,0 +1,4 @@
+[jarvis]
+172.31.2.198 java_version="openjdk-11-jdk"
+[spiderman]
+172.31.33.94 java_version="java-1.8.0-openjdk-devel"
