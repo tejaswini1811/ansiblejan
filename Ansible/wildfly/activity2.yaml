@@ -1,0 +1,85 @@
+---
+- name: install jboss on centos7
+  hosts: all
+  become: yes
+  vars: 
+    wildfly_release: 27.0.1.Final
+    group_name: wildfly
+    user_name: wildfly 
+    user_home: /opt/wildfly
+    user_shell: /sbin/nologin
+    wildfly_service_name: wildfly.service
+  tasks:
+    - name: java ,wget and curl installation
+      ansible.builtin.yum:
+        name:
+          - java-11-openjdk-devel
+          - wget
+          - curl
+        update_cache: yes
+        state: present
+    - name: Download WildFly Release archive
+      ansible.builtin.get_url:
+        url: "https://github.com/wildfly/wildfly/releases/download/{{ wildfly_release }}/wildfly-{{ wildfly_release }}.tar.gz"
+        dest: /tmp/
+    - name: unarchive wildfly release
+      ansible.builtin.unarchive:
+        src: "/tmp/wildfly-{{ wildfly_release }}.tar.gz"
+        dest: /opt/
+        mode: '0777'
+        remote_src: true
+    - name: create a symbolic link wildfly
+      ansible.builtin.file:
+        src: "{{ user_home }}-{{ wildfly_release }}"
+        path: {{ user_home }}
+        state: link
+    - name: add group of wildfly
+      ansible.builtin.group:
+        name: {{ group_name }}
+        system: yes
+        state: present
+    - name: user add of wildfly 
+      ansible.builtin.user:
+        name: {{ user_name }}
+        group: {{ group_name }}
+        create_home: true
+        home: {{ user_home }}
+        shell: {{ user_shell}}
+        system: true
+    - name: creating a folder
+      ansible.builtin.file:
+        path: /etc/wildfly
+        owner: {{ user_name }}
+        group: {{ group_name }}
+        state: directory
+    - name: copying wildfly.conf
+      ansible.builtin.copy:
+        src: "{{ user_home }}/docs/contrib/scripts/systemd/wildfly.conf "
+        dest: /etc/wildfly/
+        owner: {{ user_name }}
+        group: {{ group_name }}
+        remote_src: yes
+    - name: copying wildfly.service
+      ansible.builtin.copy:
+        src: "{{ user_home }}/docs/contrib/scripts/systemd/wildfly.service" 
+        dest: /etc/systemd/system/
+        owner: {{ user_name }}
+        group: {{ group_name }}
+        remote_src: yes
+    - name: copying launch.sh
+      ansible.builtin.copy:
+        src: "{{ user_home }}/docs/contrib/scripts/systemd/launch.sh"
+        dest: "{{ user_home }}/bin/"
+        owner: {{ user_name }}
+        group: {{ group_name }}
+        remote_src: yes
+        mode: +x
+    - name: set permissions to users on wildfly
+      ansible.builtin.command:  sudo sh -c 'chown -R wildfly:wildfly /opt/wildfly'
+    - name: Reload systemd service.
+      ansible.builtin.systemd:
+        name: {{ wildfly_service_name }}
+        daemon_reload: yes
+        enabled: yes
+        state: started
+      
