@@ -31,3 +31,6 @@ Ansible-playbook for above commands:
 * To excute the playbook <ansible-playbook -i hosts tomcat.yml>
 * After that you get check the status in node and check the tomcat page.
   ![preview](images/tomcat2.png)
+Configuring Tomcat Web Management Interface
+-------------------------------------------
+* [referhere](https://linuxize.com/post/how-to-install-tomcat-10-on-ubuntu-22-04/#configuring-tomcat-web-management-interface) for manual steps of configuring tomcat web management.
