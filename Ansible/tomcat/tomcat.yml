@@ -1,6 +1,6 @@
 ---
 - name: tomcat on ubuntu
-  hosts: 172.31.11.82
+  hosts: all
   become: yes
   vars:
     version: "10.1.5"
