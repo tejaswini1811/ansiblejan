@@ -14,19 +14,19 @@
   tasks:
     - name: installing java
       ansible.builtin.apt:
-        name: {{ java_version }}
+        name: "{{ java_version }}"
         update_cache: yes
         state: present
     - name: creating a system user
       ansible.builtin.user:
-        name: {{ user_name }}
+        name: "{{ user_name }}"
         create_home: true
-        home: {{ user_home }}
-        shell: {{ user_shell }}
+        home: "{{ user_home }}"
+        shell: "{{ user_shell }}"
         state: present
     - name: creating tomcat group
       ansible.builtin.group:
-        name: {{ group_name }}
+        name: "{{ group_name }}"
         state: present
     - name: downloading tomcat
       ansible.builtin.get_url:
@@ -34,32 +34,32 @@
         dest: /tmp/
     - name: unarchive tar file
       ansible.builtin.unarchive:
-        src: /tmp/apache-tomcat-{{version}}.tar.gz
-        dest: {{ user_home }}
+        src: "/tmp/apache-tomcat-{{tomcat_version}}.tar.gz"
+        dest: "{{ user_home }}"
         mode: '777'
-        owner: {{ user_name }}
-        group: {{ group_name }}
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
         remote_src: yes
     - name: creating symbolic link
       ansible.builtin.file: 
-        src: "{{ user_home }}/apache-tomcat-{{version}}"
+        src: "{{ user_home }}/apache-tomcat-{{tomcat_version}}"
         dest: "{{ user_home }}/latest"
-        owner: {{ user_name }}
-        group: {{ group_name }}
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
         state: link
         mode: '777'
     - name: tomcat's bin shell directory executable order
       ansible.builtin.command: "sudo  sh -c 'chmod +x {{ user_home }}/latest/bin/*.sh'"
     - name: creating tomcat.service
       ansible.builtin.copy:
-        src: {{ tomcat_service_name }}
+        src: "{{ tomcat_service_name }}"
         dest: "/etc/systemd/system/{{ tomcat_service_name }}"
-        owner: {{ user_name }}
-        group: {{ group_name }}
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
         mode: '777'
     - name: enable and start tomcat service
       ansible.builtin.systemd: 
-        name: {{ tomcat_service_name }}
+        name: "{{ tomcat_service_name }}"
         daemon_reload: yes
         enabled: yes
         state: started
@@ -67,25 +67,25 @@
       ansible.builtin.copy:
         src: tomcat-users.xml
         dest: "{{ user_home }}/latest/conf/tomcat-users.xml"
-        owner: {{ user_name }}
-        group: {{ group_name }}
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
         mode: '777'
     - name: copying context.xml
       ansible.builtin.copy:
         src: context.xml
         dest: "{{ user_home }}/latest/webapps/manager/META-INF/context.xml"
-        owner: {{ user_name }}
-        group: {{ group_name }}
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
         mode: '777'
     - name: copying hostmanager-context.xml
       ansible.builtin.copy:
         src: hostmanager-context.xml
         dest: "{{ user_home }}/latest/webapps/host-manager/META-INF/context.xml"
-        owner: {{ user_name }}
-        group: {{ group_name }}
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
         mode: '777'
     - name: restart tomcat service
       ansible.builtin.systemd:
-        name: {{ tomcat_service_name }}
+        name: "{{ tomcat_service_name }}"
         state: restarted
 

@@ -35,7 +35,11 @@ Configuring Tomcat Web Management Interface
 -------------------------------------------
 * [referhere](https://linuxize.com/post/how-to-install-tomcat-10-on-ubuntu-22-04/#configuring-tomcat-web-management-interface) for manual steps of configuring tomcat web management.
 * After doing those steps we access manager app and host manager buttons
-![preview](images/tomcat3.png)
+ ![preview](images/tomcat3.png)
+ ![preview](images/tomcat5.png)
 * For ansible-playbook [referhere](https://github.com/tejaswini1811/ansiblejan/blob/main/Ansible/tomcat/tomcat.yml)
 * After applying playbook we can access tomcat web.
-![preview](images/tomcat4.png)
+ ![preview](images/tomcat4.png)
+ ![preview](images/tomcat6.png)
+* Added variables for ansible-playbook [referhere](https://github.com/tejaswini1811/ansiblejan/blob/main/Ansible/tomcat/tomcat.yml)
+* 
