@@ -1,0 +1,58 @@
+---
+- name: tomcat on ubuntu
+  hosts: appservers
+  become: yes
+  tasks:
+    - name: installing java
+      ansible.builtin.package:
+        name: "{{ java_version }}"
+        state: present
+    - name: creating a system user
+      ansible.builtin.user:
+        name: "{{ user_name }}"
+        create_home: true
+        home: "{{ user_home }}"
+        shell: "{{ user_shell }}"
+        state: present
+    - name: creating tomcat group
+      ansible.builtin.group:
+        name: "{{ group_name }}"
+        state: present
+    - name: downloading tomcat
+      ansible.builtin.get_url:
+        url: "https://www-eu.apache.org/dist/tomcat/tomcat-{{ tomcat_major_version }}/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz" 
+        dest: /tmp/
+    - name: unarchive tar file
+      ansible.builtin.unarchive:
+        src: "/tmp/apache-tomcat-{{tomcat_version}}.tar.gz"
+        dest: "{{ user_home }}"
+        mode: '777'
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        remote_src: yes
+    - name: creating symbolic link
+      ansible.builtin.file: 
+        src: "{{ user_home }}/apache-tomcat-{{tomcat_version}}"
+        dest: "{{ user_home }}/latest"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        state: link
+        mode: '777'
+    - name: tomcat's bin shell directory executable order
+      ansible.builtin.command: "sudo  sh -c 'chmod +x {{ user_home }}/latest/bin/*.sh'"
+    - name: creating tomcat.service in centos
+      ansible.builtin.copy:
+        src: centos-tomcat.service
+        dest: "/etc/systemd/system/{{ tomcat_service_name }}"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        mode: '777'
+      when: ansible_facts['distribution'] == "CentOS"
+    - name: creating tomcat.service in ubtuntu
+      ansible.builtin.copy:
+        src: ubuntu-tomcat.service
+        dest: "/etc/systemd/system/{{ tomcat_service_name }}"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        mode: '777'
+      when: ansible_facts['distribution'] == "Ubuntu"
