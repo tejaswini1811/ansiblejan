@@ -1,7 +1,7 @@
 ---
 - name: nopcommerce install
   become: yes
-  hosts: all
+  hosts: appserver 
   tasks: 
     - name: getting debian packages
       ansible.builtin.get_url:
