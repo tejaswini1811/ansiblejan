@@ -71,4 +71,3 @@ WantedBy=multi-user.target
 ```
 ## Restart the tomcat service:
 * sudo systemctl restart tomcat
-* 
