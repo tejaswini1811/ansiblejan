@@ -1,0 +1,14 @@
+---
+- name: nopcommerce install
+  become: yes
+  hosts: all
+  tasks: 
+    - name: getting debian packages
+      ansible.builtin.get_url:
+        url: wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb 
+        dest: packages-microsoft-prod.deb
+        state: present
+    - name: debian packages install
+      ansible.builtin.dpkg_selections:
+        name: packages-microsoft-prod.deb
+        selection: install
