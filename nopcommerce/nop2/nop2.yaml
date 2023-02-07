@@ -1,0 +1,57 @@
+---
+- name: nopcommerce install
+  become: yes
+  hosts: appserver
+  vars: 
+    core_runtime_version: aspnetcore-runtime-7.0
+  tasks: 
+    - name: getting debian packages
+      ansible.builtin.get_url:
+        url: https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb 
+        dest: /tmp/packages-microsoft-prod.deb
+    - name: debian packages install
+      ansible.builtin.apt:
+        deb: /tmp/packages-microsoft-prod.deb
+        state: present
+    - name: Install the .NET Core Runtime
+      ansible.builtin.apt: 
+        name: 
+          - apt-transport-https 
+          - "{{core_runtime_version}}"
+          - unzip
+        update_cache: yes
+        state: present
+    - name: create a directory
+      ansible.builtin.file:
+        name: /var/www/nopCommerce
+        state: directory
+      notify: Download and unpack nopCommerce 
+    - name: Create couple directories to run nopCommerce
+      ansible.builtin.file:
+        path: "{{item}}"
+        state: directory 
+      loop:  
+        - /var/www/nopCommerce/bin 
+        - /var/www/nopCommerce/logs
+    - name: change file permissions
+      ansible.builtin.file: 
+        path: /var/www/nopCommerce
+        owner: www-data
+        group: www-data
+        recurse: yes
+        state: directory
+    - name: creating nopcommerce.service
+      ansible.builtin.copy:
+        src: nop.service
+        dest: /etc/systemd/system/nopCommerce.service
+    - name: start nopcommerce.service
+      ansible.builtin.systemd:
+        name: nopCommerce.service
+        state: started
+
+  handlers: 
+    - name:  Download and unpack nopCommerce
+      ansible.builtin.unarchive:
+        src: https://github.com/nopSolutions/nopCommerce/releases/download/release-4.60.2/nopCommerce_4.60.2_NoSource_linux_x64.zip
+        dest: /var/www/nopCommerce
+        remote_src: yes 
