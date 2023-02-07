@@ -3,7 +3,7 @@
   become: yes
   hosts: appserver
   vars: 
-    core-runtime-version: "aspnetcore-runtime-7.0" 
+    core-runtime-version: aspnetcore-runtime-7.0
   tasks: 
     - name: getting debian packages
       ansible.builtin.get_url:
