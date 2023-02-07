@@ -1,13 +1,23 @@
 ---
 - name: nopcommerce install
   become: yes
-  hosts: appserver 
+  hosts: appserver
+  vars: 
+    core-runtime-version: "aspnetcore-runtime-7.0" 
   tasks: 
     - name: getting debian packages
       ansible.builtin.get_url:
-        url: wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb 
+        url: https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb 
         dest: /tmp/packages-microsoft-prod.deb
     - name: debian packages install
       ansible.builtin.dpkg_selections:
         name: packages-microsoft-prod.deb
         selection: install
+    - name: Install the .NET Core Runtime
+      ansible.builtin.apt: 
+        name: 
+          - apt-transport-https
+          - "{{core-runtime-version}}"
+        update_cache: yes
+        state: present
+ 
