@@ -1,0 +1,22 @@
+---
+- name: ngnix install
+  become: yes
+  hosts: webserver
+  tasks: 
+    - name: installing nginx
+      ansible.builtin.apt:
+        name: nginx
+        update_cache: yes
+        state: present
+    - name: start nginx service
+      ansible.builtin.systemd:
+        name: nginx
+        state: started
+    - name: modifing /etc/nginx/sites-available/default
+      ansible.builtin.copy: 
+        src: nginx-default
+        dest: /etc/nginx/sites-available/default
+    - name: start nginx service
+      ansible.builtin.systemd:
+        name: nginx
+        state: restarted   
