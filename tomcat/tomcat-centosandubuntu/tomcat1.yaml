@@ -22,9 +22,9 @@
       ansible.builtin.get_url:
         url: "https://www-eu.apache.org/dist/tomcat/tomcat-{{ tomcat_major_version }}/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz" 
         dest: /tmp/
-    - name: gettng stats for startup.sh 
+    - name: get tomcat stats
       ansible.builtin.stat:
-        path: "{{ user_home}}/latest/bin/stateup.sh"
+        path: "{{ user_home }}/latest/bin/startup.sh"
       register: tomcat_startup
     - name: unarchive tar file
       ansible.builtin.unarchive:
@@ -48,10 +48,9 @@
         owner: "{{ user_name }}"
         group: "{{ group_name }}"
         state: directory
-      when: not tomcat_startup.stat.exists
     - name: tomcat's bin shell directory executable order
       ansible.builtin.command: "sudo  sh -c 'chmod +x {{ user_home }}/latest/bin/*.sh'"
-      when: not tomcat_startup.stat.exit
+      when: not tomcat_startup.stat.exists
     - name: creating tomcat.service in centos
       ansible.builtin.copy:
         src: centos-tomcat.service
@@ -72,25 +71,25 @@
         daemon_reload: yes
         enabled: yes
         state: started
-    - name: copying tomcat-users.xml
+    - name: copy the users xml
       ansible.builtin.copy:
         src: tomcat-users.xml
         dest: "{{ user_home }}/latest/conf/tomcat-users.xml"
         owner: "{{ user_name }}"
         group: "{{ group_name }}"
-    - name: copying context.xml
+    - name: copy the manager app context file
       ansible.builtin.copy:
         src: context.xml
         dest: "{{ user_home }}/latest/webapps/manager/META-INF/context.xml"
         owner: "{{ user_name }}"
         group: "{{ group_name }}"
-    - name: copying hostmanager-context.xml
+    - name: copy the host manager app context file
       ansible.builtin.copy:
         src: hostmanager-context.xml
         dest: "{{ user_home }}/latest/webapps/host-manager/META-INF/context.xml"
         owner: "{{ user_name }}"
         group: "{{ group_name }}"
-    - name: restart tomcat service
+    - name: restart tomcat
       ansible.builtin.systemd:
         name: "{{ tomcat_service_name }}"
         state: restarted
