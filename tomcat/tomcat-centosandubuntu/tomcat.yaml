@@ -33,7 +33,7 @@
         owner: "{{ user_name }}"
         group: "{{ group_name }}"
         remote_src: yes
-      when: not tomcat_startup.stat.exit
+      when: not tomcat_startup.stat.exists
     - name: creating symbolic link
       ansible.builtin.file: 
         src: "{{ user_home }}/apache-tomcat-{{tomcat_version}}"
@@ -48,7 +48,7 @@
         owner: "{{ user_name }}"
         group: "{{ group_name }}"
         state: directory
-      when: not tomcat_startup.stat.exit
+      when: not tomcat_startup.stat.exists
     - name: tomcat's bin shell directory executable order
       ansible.builtin.command: "sudo  sh -c 'chmod +x {{ user_home }}/latest/bin/*.sh'"
       when: not tomcat_startup.stat.exit
