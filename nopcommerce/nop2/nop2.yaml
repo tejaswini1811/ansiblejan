@@ -21,6 +21,19 @@
           - unzip
         update_cache: yes
         state: present
+    - name: installing nginx
+      ansible.builtin.apt:
+        name: nginx
+        update_cache: yes
+        state: present
+    - name: start nginx service
+      ansible.builtin.systemd:
+        name: nginx
+        state: started
+    - name: modifing /etc/nginx/sites-available/default
+      ansible.builtin.copy: 
+        src: nginx-default
+        dest: /etc/nginx/sites-available/default
     - name: create a directory
       ansible.builtin.file:
         name: /var/www/nopCommerce

@@ -1,5 +1,5 @@
 ---
-- name: tomcat on ubuntu
+- name: tomcat on ubuntu and centos
   hosts: appservers
   become: yes
   tasks:
@@ -22,14 +22,18 @@
       ansible.builtin.get_url:
         url: "https://www-eu.apache.org/dist/tomcat/tomcat-{{ tomcat_major_version }}/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz" 
         dest: /tmp/
+    - name: gettng stats for startup.sh 
+      ansible.builtin.stat:
+        path: "{{ user_home}}/latest/bin/stateup.sh"
+      register: tomcat_startup
     - name: unarchive tar file
       ansible.builtin.unarchive:
         src: "/tmp/apache-tomcat-{{tomcat_version}}.tar.gz"
         dest: "{{ user_home }}"
-        mode: '777'
         owner: "{{ user_name }}"
         group: "{{ group_name }}"
         remote_src: yes
+      when: not tomcat_startup.stat.exit
     - name: creating symbolic link
       ansible.builtin.file: 
         src: "{{ user_home }}/apache-tomcat-{{tomcat_version}}"
@@ -37,16 +41,23 @@
         owner: "{{ user_name }}"
         group: "{{ group_name }}"
         state: link
-        mode: '777'
+    - name: change permissions
+      ansible.builtin.file:
+        dest: "{{ user_home }}"
+        recurse: true
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        state: directory
+      when: not tomcat_startup.stat.exit
     - name: tomcat's bin shell directory executable order
       ansible.builtin.command: "sudo  sh -c 'chmod +x {{ user_home }}/latest/bin/*.sh'"
+      when: not tomcat_startup.stat.exit
     - name: creating tomcat.service in centos
       ansible.builtin.copy:
         src: centos-tomcat.service
         dest: "/etc/systemd/system/{{ tomcat_service_name }}"
         owner: "{{ user_name }}"
         group: "{{ group_name }}"
-        mode: '777'
       when: ansible_facts['distribution'] == "CentOS"
     - name: creating tomcat.service in ubtuntu
       ansible.builtin.copy:
@@ -54,5 +65,32 @@
         dest: "/etc/systemd/system/{{ tomcat_service_name }}"
         owner: "{{ user_name }}"
         group: "{{ group_name }}"
-        mode: '777'
       when: ansible_facts['distribution'] == "Ubuntu"
+    - name: enable and start tomcat service
+      ansible.builtin.systemd: 
+        name: "{{ tomcat_service_name }}"
+        daemon_reload: yes
+        enabled: yes
+        state: started
+    - name: copying tomcat-users.xml
+      ansible.builtin.copy:
+        src: tomcat-users.xml
+        dest: "{{ user_home }}/latest/conf/tomcat-users.xml"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+    - name: copying context.xml
+      ansible.builtin.copy:
+        src: context.xml
+        dest: "{{ user_home }}/latest/webapps/manager/META-INF/context.xml"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+    - name: copying hostmanager-context.xml
+      ansible.builtin.copy:
+        src: hostmanager-context.xml
+        dest: "{{ user_home }}/latest/webapps/host-manager/META-INF/context.xml"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+    - name: restart tomcat service
+      ansible.builtin.systemd:
+        name: "{{ tomcat_service_name }}"
+        state: restarted

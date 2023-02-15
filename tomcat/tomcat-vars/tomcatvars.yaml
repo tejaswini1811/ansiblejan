@@ -47,7 +47,13 @@
         owner: "{{ user_name }}"
         group: "{{ group_name }}"
         state: link
-        mode: '777'
+    - name: change permissions
+      ansible.builtin.file:
+        dest: "{{ user_home }}"
+        recurse: true
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        state: directory
     - name: tomcat's bin shell directory executable order
       ansible.builtin.command: "sudo  sh -c 'chmod +x {{ user_home }}/latest/bin/*.sh'"
     - name: creating tomcat.service
@@ -56,7 +62,6 @@
         dest: "/etc/systemd/system/{{ tomcat_service_name }}"
         owner: "{{ user_name }}"
         group: "{{ group_name }}"
-        mode: '777'
     - name: enable and start tomcat service
       ansible.builtin.systemd: 
         name: "{{ tomcat_service_name }}"
@@ -69,21 +74,18 @@
         dest: "{{ user_home }}/latest/conf/tomcat-users.xml"
         owner: "{{ user_name }}"
         group: "{{ group_name }}"
-        mode: '777'
     - name: copying context.xml
       ansible.builtin.copy:
         src: context.xml
         dest: "{{ user_home }}/latest/webapps/manager/META-INF/context.xml"
         owner: "{{ user_name }}"
         group: "{{ group_name }}"
-        mode: '777'
     - name: copying hostmanager-context.xml
       ansible.builtin.copy:
         src: hostmanager-context.xml
         dest: "{{ user_home }}/latest/webapps/host-manager/META-INF/context.xml"
         owner: "{{ user_name }}"
         group: "{{ group_name }}"
-        mode: '777'
     - name: restart tomcat service
       ansible.builtin.systemd:
         name: "{{ tomcat_service_name }}"
