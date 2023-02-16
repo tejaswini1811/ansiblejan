@@ -136,4 +136,322 @@ Configuring Tomcat Web Management Interface
 * After applying playbook we can access tomcat web.
 ![preview](images/tomcat4.png)
 ![preview](images/tomcat6.png)
+
+$Variable:$
 * Added variables for ansible-playbook [referhere](https://github.com/tejaswini1811/ansiblejan/blob/main/Ansible/tomcat/tomcat.yml)
+
+* One playbook for both centos and ubuntu machine
+```
+---
+- name: tomcat on ubuntu and centos
+  hosts: appservers
+  become: yes
+  tasks:
+    - name: installing java
+      ansible.builtin.package:
+        name: "{{ java_version }}"
+        state: present
+    - name: creating a system user
+      ansible.builtin.user:
+        name: "{{ user_name }}"
+        create_home: true
+        home: "{{ user_home }}"
+        shell: "{{ user_shell }}"
+        state: present
+    - name: creating tomcat group
+      ansible.builtin.group:
+        name: "{{ group_name }}"
+        state: present
+    - name: downloading tomcat
+      ansible.builtin.get_url:
+        url: "https://www-eu.apache.org/dist/tomcat/tomcat-{{ tomcat_major_version }}/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz" 
+        dest: /tmp/
+    - name: unarchive tar file
+      ansible.builtin.unarchive:
+        src: "/tmp/apache-tomcat-{{tomcat_version}}.tar.gz"
+        dest: "{{ user_home }}"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        remote_src: yes
+    - name: creating symbolic link
+      ansible.builtin.file: 
+        src: "{{ user_home }}/apache-tomcat-{{tomcat_version}}"
+        dest: "{{ user_home }}/latest"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        state: link
+    - name: change permissions
+      ansible.builtin.file:
+        dest: "{{ user_home }}"
+        recurse: true
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        state: directory
+    - name: tomcat's bin shell directory executable order
+      ansible.builtin.command: "sudo  sh -c 'chmod +x {{ user_home }}/latest/bin/*.sh'"
+    - name: creating tomcat.service in centos
+      ansible.builtin.copy:
+        src: centos-tomcat.service
+        dest: "/etc/systemd/system/{{ tomcat_service_name }}"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+      when: ansible_facts['distribution'] == "CentOS"
+    - name: creating tomcat.service in ubtuntu
+      ansible.builtin.copy:
+        src: ubuntu-tomcat.service
+        dest: "/etc/systemd/system/{{ tomcat_service_name }}"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+      when: ansible_facts['distribution'] == "Ubuntu"
+    - name: enable and start tomcat service
+      ansible.builtin.systemd: 
+        name: "{{ tomcat_service_name }}"
+        daemon_reload: yes
+        enabled: yes
+        state: started
+    - name: copy the users xml
+      ansible.builtin.copy:
+        src: tomcat-users.xml
+        dest: "{{ user_home }}/latest/conf/tomcat-users.xml"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+    - name: copy the manager app context file
+      ansible.builtin.copy:
+        src: context.xml
+        dest: "{{ user_home }}/latest/webapps/manager/META-INF/context.xml"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+    - name: copy the host manager app context file
+      ansible.builtin.copy:
+        src: hostmanager-context.xml
+        dest: "{{ user_home }}/latest/webapps/host-manager/META-INF/context.xml"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+    - name: restart tomcat
+      ansible.builtin.systemd:
+        name: "{{ tomcat_service_name }}"
+        state: restarted
+```
+$Stat$ $Module:$ 
+* We need to skip certain steps to execute again because it was done in first time.
+![preview](images/tomcat7.png)
+* By using ansible.builtin.stat module we can do that.
+* [Referhere](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/stat_module.html#examples) for stat module.   
+```
+---
+- name: tomcat on ubuntu and centos
+  hosts: appservers
+  become: yes
+  tasks:
+    - name: installing java
+      ansible.builtin.package:
+        name: "{{ java_version }}"
+        state: present
+    - name: creating a system user
+      ansible.builtin.user:
+        name: "{{ user_name }}"
+        create_home: true
+        home: "{{ user_home }}"
+        shell: "{{ user_shell }}"
+        state: present
+    - name: creating tomcat group
+      ansible.builtin.group:
+        name: "{{ group_name }}"
+        state: present
+    - name: downloading tomcat
+      ansible.builtin.get_url:
+        url: "https://www-eu.apache.org/dist/tomcat/tomcat-{{ tomcat_major_version }}/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz" 
+        dest: /tmp/
+    - name: get tomcat stats
+      ansible.builtin.stat:
+        path: "{{ user_home }}/latest/bin/startup.sh"
+      register: tomcat_startup
+    - name: unarchive tar file
+      ansible.builtin.unarchive:
+        src: "/tmp/apache-tomcat-{{tomcat_version}}.tar.gz"
+        dest: "{{ user_home }}"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        remote_src: yes
+      when: not tomcat_startup.stat.exists
+    - name: creating symbolic link
+      ansible.builtin.file: 
+        src: "{{ user_home }}/apache-tomcat-{{tomcat_version}}"
+        dest: "{{ user_home }}/latest"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        state: link
+    - name: change permissions
+      ansible.builtin.file:
+        dest: "{{ user_home }}"
+        recurse: true
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        state: directory
+    - name: tomcat's bin shell directory executable order
+      ansible.builtin.command: "sudo  sh -c 'chmod +x {{ user_home }}/latest/bin/*.sh'"
+      when: not tomcat_startup.stat.exists
+    - name: creating tomcat.service in centos
+      ansible.builtin.copy:
+        src: centos-tomcat.service
+        dest: "/etc/systemd/system/{{ tomcat_service_name }}"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+      when: ansible_facts['distribution'] == "CentOS"
+    - name: creating tomcat.service in ubtuntu
+      ansible.builtin.copy:
+        src: ubuntu-tomcat.service
+        dest: "/etc/systemd/system/{{ tomcat_service_name }}"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+      when: ansible_facts['distribution'] == "Ubuntu"
+    - name: enable and start tomcat service
+      ansible.builtin.systemd: 
+        name: "{{ tomcat_service_name }}"
+        daemon_reload: yes
+        enabled: yes
+        state: started
+    - name: copy the users xml
+      ansible.builtin.copy:
+        src: tomcat-users.xml
+        dest: "{{ user_home }}/latest/conf/tomcat-users.xml"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+    - name: copy the manager app context file
+      ansible.builtin.copy:
+        src: context.xml
+        dest: "{{ user_home }}/latest/webapps/manager/META-INF/context.xml"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+    - name: copy the host manager app context file
+      ansible.builtin.copy:
+        src: hostmanager-context.xml
+        dest: "{{ user_home }}/latest/webapps/host-manager/META-INF/context.xml"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+    - name: restart tomcat
+      ansible.builtin.systemd:
+        name: "{{ tomcat_service_name }}"
+        state: restarted
+```
+![preview](images/tomcat8.png)
+  $Handlers:$
+* We can improve our playbook further by using handlers.
+* [Referhere](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_handlers.html#handlers) for how to use handlers.
+* Sometimes you want a task to run only when a change is made on a machine. For example, you may want to restart a service if a task updates the configuration of that service, but not if the configuration is unchanged. Ansible uses handlers to address this use case. Handlers are tasks that only run when notified.
+  
+ $Loops:$ [Referhere](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_loops.html) for reference how to use loops in playbook.
+* Ansible offers the loop, `with_<lookup>`, and until keywords to execute a task multiple times. Examples of commonly-used loops include changing ownership on several files and/or directories with the file module, creating multiple users with the user module, and repeating a polling step until a certain result is reached.
+* It's like for loop in ansible.
+* To do same task multiple times we use loops.
+* In tomcat context.xml file content is same in manager and host manager so instead of using two different files to copy to different paths we can use same context.xml tp different paths. 
+### Ansible-Playbook using handlers and loops:
+```
+---
+- name: tomcat on ubuntu and centos
+  hosts: appservers
+  become: yes
+  tasks:
+    - name: installing java
+      ansible.builtin.package:
+        name: "{{ java_version }}"
+        state: present
+    - name: creating a system user
+      ansible.builtin.user:
+        name: "{{ user_name }}"
+        create_home: true
+        home: "{{ user_home }}"
+        shell: "{{ user_shell }}"
+        state: present
+    - name: creating tomcat group
+      ansible.builtin.group:
+        name: "{{ group_name }}"
+        state: present
+    - name: downloading tomcat
+      ansible.builtin.get_url:
+        url: "https://www-eu.apache.org/dist/tomcat/tomcat-{{ tomcat_major_version }}/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz" 
+        dest: /tmp/
+    - name: get tomcat stats
+      ansible.builtin.stat:
+        path: "{{ user_home }}/latest/bin/startup.sh"
+      register: tomcat_startup
+    - name: unarchive tar file
+      ansible.builtin.unarchive:
+        src: "/tmp/apache-tomcat-{{tomcat_version}}.tar.gz"
+        dest: "{{ user_home }}"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        remote_src: yes
+      when: not tomcat_startup.stat.exists
+    - name: creating symbolic link
+      ansible.builtin.file: 
+        src: "{{ user_home }}/apache-tomcat-{{tomcat_version}}"
+        dest: "{{ user_home }}/latest"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        state: link
+      notify:
+        - change permissions
+        - tomcat's bin shell directory executable order
+    - name: creating tomcat.service in centos
+      ansible.builtin.copy:
+        src: centos-tomcat.service
+        dest: "/etc/systemd/system/{{ tomcat_service_name }}"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+      when: ansible_facts['distribution'] == "CentOS"
+    - name: creating tomcat.service in ubtuntu
+      ansible.builtin.copy:
+        src: ubuntu-tomcat.service
+        dest: "/etc/systemd/system/{{ tomcat_service_name }}"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+      when: ansible_facts['distribution'] == "Ubuntu"
+      notify:
+        - enable and start tomcat service
+    - name: copy the users xml
+      ansible.builtin.copy:
+        src: tomcat-users.xml
+        dest: "{{ user_home }}/latest/conf/tomcat-users.xml"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+      notify:
+        - restart tomcat 
+    - name: copy the manager app and host managerapp context file
+      ansible.builtin.copy:
+        src: context.xml
+        dest: "{{ item }}"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+      loop:
+        - "{{ user_home }}/latest/webapps/manager/META-INF/context.xml"
+        - "{{ user_home }}/latest/webapps/host-manager/META-INF/context.xml"
+      notify:
+        - restart tomcat
+    - name: ensure tomcat service is running
+      ansible.builtin.systemd:
+        name: "{{ tomcat_service_name }}"
+        state: started
+  handlers: 
+    - name: change permissions
+      ansible.builtin.file:
+        dest: "{{ user_home }}"
+        recurse: true
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        state: directory
+    - name: tomcat's bin shell directory executable order
+      ansible.builtin.command: "sudo  sh -c 'chmod +x {{ user_home }}/latest/bin/*.sh'"
+    - name: enable and start tomcat service
+      ansible.builtin.systemd: 
+        name: "{{ tomcat_service_name }}"
+        daemon_reload: yes
+        enabled: yes
+        state: started 
+    - name: restart tomcat
+      ansible.builtin.systemd:
+        name: "{{ tomcat_service_name }}"
+        state: restarted
+```
+
+   
