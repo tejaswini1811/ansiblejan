@@ -136,7 +136,7 @@ Configuring Tomcat Web Management Interface
 ![preview](images/tomcat6.png)
 
 $Variable:$
-* Added variables for ansible-playbook [referhere](https://github.com/tejaswini1811/ansiblejan/blob/main/Ansible/tomcat/tomcat.yml)
+* Added variables for ansible-playbook [referhere](https://github.com/tejaswini1811/ansiblejan/tree/main/tomcat/tomcat-vars).
 
 * One playbook for both centos and ubuntu machine
 ```yaml
@@ -501,4 +501,4 @@ $Stat$ $Module:$
 * By using template module in ansible we can provide variables in files by providing `.j2` extention. Example `tomcat-users.xml.j2` . For more dtails about template module [Refer Here](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/template_module.html).
 ### Find Module:
 * Find module is used to find files with extentions.
-* 
+* [Refer Here](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/find_module.html) for find module usage.
