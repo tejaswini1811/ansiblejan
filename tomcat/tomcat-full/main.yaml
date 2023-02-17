@@ -54,7 +54,7 @@
         pattern: '*.sh'
       register: find_result
     - name: excute shell permission to bin folder shell files
-      ansible.builtin.shell: " {{ item }}"
+      ansible.builtin.shell: "sh -c 'chmod +x {{ item }}'"
       loop: 
         - "{{ find_result.files }}"
     - name: creating tomcat.service 
