@@ -3,6 +3,8 @@ all:
   children: 
     appservers:
       hosts:
-        172.31.40.51:
+        172.31.40.51: 
+          java_version: java-11-openjdk-devel
         172.31.40.226:
+          java_version: openjdk-11-jdk
          
