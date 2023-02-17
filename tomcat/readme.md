@@ -38,8 +38,8 @@ Configuring Tomcat Web Management Interface
 ![preview](images/tomcat3.png)
 ![preview](images/tomcat5.png)
 * For ansible-playbook.
-  ```
-  ---
+```yaml
+---
 - name: tomcat on ubuntu
   hosts: all
   become: yes
@@ -129,9 +129,7 @@ Configuring Tomcat Web Management Interface
       ansible.builtin.systemd:
         name: "{{ tomcat_service_name }}"
         state: restarted
-
-
-  ```
+```
 * For tomacat- userxml. [Referhere]()
 * After applying playbook we can access tomcat web.
 ![preview](images/tomcat4.png)
@@ -141,7 +139,7 @@ $Variable:$
 * Added variables for ansible-playbook [referhere](https://github.com/tejaswini1811/ansiblejan/blob/main/Ansible/tomcat/tomcat.yml)
 
 * One playbook for both centos and ubuntu machine
-```
+```yaml
 ---
 - name: tomcat on ubuntu and centos
   hosts: appservers
@@ -237,7 +235,7 @@ $Stat$ $Module:$
 ![preview](images/tomcat7.png)
 * By using ansible.builtin.stat module we can do that.
 * [Referhere](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/stat_module.html#examples) for stat module.   
-```
+```yaml
 ---
 - name: tomcat on ubuntu and centos
   hosts: appservers
@@ -346,7 +344,7 @@ $Stat$ $Module:$
 * To do same task multiple times we use loops.
 * In tomcat context.xml file content is same in manager and host manager so instead of using two different files to copy to different paths we can use same context.xml tp different paths. 
 ### Ansible-Playbook using handlers and loops:
-```
+```yaml
 ---
 - name: tomcat on ubuntu and centos
   hosts: appservers
@@ -453,5 +451,54 @@ $Stat$ $Module:$
         name: "{{ tomcat_service_name }}"
         state: restarted
 ```
+* We can write our inventory [hosts] in two formats.
+     1. ini
+     2. yaml
+1. ### $ini:$ 
+   * example of tomcat.
+   ```ini
+   [appservers]
+   172.31.40.51 java_version=java-11-openjdk-devel
+   172.31.40.226 java_version=openjdk-11-jdk
 
-   
+   [appservers:vars]
+    user_home=/opt/tomcat
+    user_shell=/bin/false
+    tomcat_version= "10.1.5"
+    tomcat_major_version= "10"
+    user_name=tomcat
+    group_name= tomcat
+    tomcat_service_name= tomcat.service
+   ```
+2. ### $yaml:$ 
+   * example of tomcat.
+   ```yaml
+   ---
+   all:
+     children: 
+       appservers:
+         hosts:
+           172.31.40.51: 
+             java_version: java-11-openjdk-devel
+           172.31.40.226:
+             java_version: openjdk-11-jdk
+         vars: 
+           user_home: /opt/tomcat
+           user_shell: /bin/false
+           tomcat_version: "10.1.5"
+           tomcat_major_version: "10"
+           user_name: tomcat
+           group_name: tomcat
+           tomcat_service_name: tomcat.service
+   ```
+* We can further seperate variables into `group_vars` and `host_vars`. 
+* In `group_vars` we create a file with the name of hosts and declare the group variables.
+* Same as `group_vars` in `host_vars` we create a individual files with hosts ip addresses and declare hosts individual variables.
+### Template Module:
+* Ansible uses jinja2 template 
+* jinja2 is used in python.
+* In ansible jinja2 can be used in files.
+* By using template module in ansible we can provide variables in files by providing `.j2` extention. Example `tomcat-users.xml.j2` . For more dtails about template module [Refer Here](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/template_module.html).
+### Find Module:
+* Find module is used to find files with extentions.
+* 

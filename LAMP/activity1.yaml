@@ -24,6 +24,8 @@
         argv:
           - sudo chown -R www-data:www-data /var/www/html/
           - sudo chmod -R g+rw /var/www/html/
+      notify:
+        - ensure the apache service is running and enabled on  ubuntu
   handlers:
 
     - name: ensure the apache service is running and enabled on  ubuntu
@@ -31,8 +33,4 @@
         name: apache2
         enabled: yes
         state: started
-    - name: ensure the apache service is running and enabled on  ubuntu
-      ansible.builtin.systemd:
-        name: httpd
-        enabled: yes
-        state: started 
+

@@ -1,0 +1,8 @@
+---
+all:
+  children: 
+    appservers:
+      hosts:
+        172.31.40.51
+        172.31.40.226
+         
