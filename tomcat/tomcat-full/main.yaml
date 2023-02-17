@@ -48,7 +48,6 @@
         state: link
       notify:
         - change permissions
-        - tomcat's bin shell directory executable order
     - name: finding *.sh files
       ansible.builtin.find:
         path: "{{ user_home }}/latest/bin/"
@@ -57,7 +56,7 @@
     - name: excute shell permission to bin folder shell files
       ansible.builtin.shell: "chmod +x {{ item }}"
       loop: 
-        - find_result.files 
+        - "{{ find_result.files }}"
     - name: creating tomcat.service 
       ansible.builtin.template:
         src: tomcat.service.j2
