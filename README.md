@@ -1,4 +1,4 @@
-# ansible
+# Ansible
 ## Variables:
 * [Refer Here](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html#:~:text=Ansible%20uses%20variables%20to%20manage,syntax%2C%20including%20lists%20and%20dictionaries.) for variables in ansible.
 * Variables are used to define arguments.
